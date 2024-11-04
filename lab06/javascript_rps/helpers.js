@@ -44,7 +44,7 @@ export function runAllTests(allTests) {
             successes,
             "out of",
             allTests.length,
-            "tests passed.\n"
+            "tests passed.\n",
         );
     }
 }
