@@ -1,0 +1,26 @@
+{
+    "name": "javascript_rps",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "eslint.config.js",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "test": "mocha",
+        "format:check": "prettier --check \"**/*.{js,jsx}\"",
+        "format:fix": "prettier --write \"**/*.{js,jsx}\"",
+        "lint:check": "eslint . && echo \"All ES Lint checks pass!\"",
+        "lint:fix": "eslint . --fix && echo \"All ES Lint checks pass!\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+        "eslint": "^9.14.0",
+        "eslint-plugin-mocha": "^10.5.0",
+        "mocha": "^10.8.2",
+        "prettier": "^3.3.3"
+    }
+}

@@ -12,8 +12,26 @@ Implement the following logic and return the corresponding message (exactly as i
 */
 export function rps(hand1, hand2) {
     // finish this code:
-    if (hand1 === "rock" && hand2 === "paper") {
+    if (
+        (hand1 === "rock" && hand2 === "paper") ||
+        (hand1 === "paper" && hand2 === "rock")
+    ) {
         return "Paper wins!";
+    } else if (
+        (hand1 === "paper" && hand2 === "scissors") ||
+        (hand1 === "scissors" && hand2 === "paper")
+    ) {
+        return "Scissors wins!";
+    } else if (
+        (hand1 === "scissors" && hand2 === "rock") ||
+        (hand1 === "rock" && hand2 === "scissors")
+    ) {
+        return "Rock wins!";
+    } else if (
+        hand1 === hand2 &&
+        ["rock", "paper", "scissors"].includes(hand1)
+    ) {
+        return "Tie!";
     } else {
         return "Invalid";
     }
