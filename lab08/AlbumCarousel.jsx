@@ -9,7 +9,6 @@ const albums = [
       'https://i.scdn.co/image/ab67616d0000b2731572698fff8a1db257a53599',
     spotify_url: 'https://open.spotify.com/album/6BzxX6zkDsYKFJ04ziU5xQ',
   },
-  // 更多专辑数据...
 ];
 
 const AlbumCarousel = () => {
