@@ -24,6 +24,7 @@ class Location(BaseModel):
 
 
 class Course(BaseModel):
+    id: int
     crn: int
     code: str
     department: str

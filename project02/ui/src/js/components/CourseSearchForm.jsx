@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Button,
     Form,
@@ -11,8 +11,10 @@ import {
     Switch,
     Space,
 } from "antd";
+import { fetchDepartments } from "../services/apis";
 
 export default function CourseSearchForm({ fetchCourses }) {
+    const [departments, setDepartments] = useState([]);
     const classificationOpts = [
         { key: "fys", value: "First Year Seminar" },
         { key: "di", value: "Diversity Intensive" },
@@ -22,10 +24,21 @@ export default function CourseSearchForm({ fetchCourses }) {
         { key: "service", value: "Service Learning" },
     ];
 
+    // Load departments from the API when the component mounts
+    useEffect(() => {
+        async function loadDepartments() {
+            try {
+                const deptData = await fetchDepartments();
+                setDepartments(deptData);
+            } catch (error) {
+                console.error("Failed to fetch departments:", error);
+            }
+        }
+        loadDepartments();
+    }, []);
+
     const handleFormSubmit = (formData) => {
         console.log("Here's the form data:", formData);
-        // fetchCourses is a function defined in the parent component (App.jsx).
-        // It was passed into this component as a prop.
         fetchCourses(formData);
     };
 
@@ -72,19 +85,11 @@ export default function CourseSearchForm({ fetchCourses }) {
                     <Form.Item label="Department" name="department">
                         <Select>
                             <Select.Option value="">Any</Select.Option>
-
-                            {/* React Task 2:
-                                replace these hardcoded ones with ones 
-                                that are coming from the /api/departments endpoint. 
-                                You will need to use the useEffect and useState React 
-                                functions. 
-                            */}
-                            <Select.Option key="CSCI" value="CSCI">
-                                CSCI
-                            </Select.Option>
-                            <Select.Option key="NM" value="NM">
-                                NM
-                            </Select.Option>
+                            {departments.map((dept) => (
+                                <Select.Option key={dept} value={dept}>
+                                    {dept}
+                                </Select.Option>
+                            ))}
                         </Select>
                     </Form.Item>
 

@@ -1,113 +1,105 @@
 import asyncio
-
-from sqlalchemy import select  # , or_
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
 from db import AsyncSessionLocal
-from models import Course, Schedule
+from models import Course, User
+from db import get_db
 
-"""
-Documentation:
-https://docs.sqlalchemy.org/en/20/orm/queryguide/select.html#selecting-orm-entities-and-attributes
-"""
-
-
-async def show_courses(db: AsyncSessionLocal):
-    # create query:
-    query = select(Course).order_by(Course.department)
-
-    # execute the query:
+# Print all usernames
+async def print_usernames(db: AsyncSessionLocal):
+    query = select(User.username)
     result = await db.execute(query)
-
-    # convert the query results to a list:
-    courses = result.scalars().all()
-
-    # print select information for each course:
-    for course in courses:
-        print(f"{course.crn} ({course.department}) - {course.title}")
+    usernames = result.scalars().all()
+    for username in usernames:
+        print(username)
 
 
-async def show_courses_with_table_joins(db: AsyncSessionLocal):
+# Print unique departments
+async def print_unique_departments(db: AsyncSessionLocal):
+    query = select(Course.department).distinct()
+    result = await db.execute(query)
+    departments = result.scalars().all()
+    for department in departments:
+        print(department)
 
-    # this is how joins work in SQLAlchemy:
-    query = (
-        select(Course)
-        .options(
-            selectinload(
-                Course.instructors
-            ),  # joins courses table to instructors table
-            selectinload(Course.location),  # joins courses table to locations table
-        )
-        .order_by(Course.department)
+
+# Print open CSCI courses
+async def print_open_cs_courses(db: AsyncSessionLocal):
+    query = select(Course.crn, Course.title).where(
+        (Course.department == "CSCI") &
+        (Course.enrollment_current < Course.enrollment_max)
     )
-
-    # execute the query:
+    
     result = await db.execute(query)
-
-    # convert the query results to a list:
-    courses = result.scalars().all()
-
-    # print select information for each course:
-    for course in courses:
-
-        # print stuff from courses tables
-        print(f"{course.crn} ({course.department}) - {course.title}")
-
-        # because we joined on the instructors table, we  have access to its data:
-        instructor_names = [instructor.full_name for instructor in course.instructors]
-        print("Intructor(s):", ", ".join(instructor_names))
-
-        # because we joined on the locations table, we can output the location:
-        if course.location:
-            print("Location:", course.location.full_location)
-        print("-" * 70)
-
-
-async def print_schedules(db: AsyncSessionLocal):
-    # Fetch the courses from the DB:
-    query = select(Schedule).options(
-        # joins the schedule and courses table together
-        selectinload(Schedule.courses).options(
-            # and within each course, it also joins with the
-            # corresponding location and instructors:
-            joinedload(Course.location),
-            selectinload(Course.instructors),
-        )
-    )
-    result = await db.execute(query)
-
-    schedules = result.scalars().all()
-
-    for schedule in schedules:
-        print()
-        print("-" * 70)
-        print(schedule.name)
-        print("-" * 70)
-        for course in schedule.courses:
-            print(f"* {course.crn} ({course.department}) - {course.title}")  # noqa
-            instructor_names = [
-                instructor.full_name for instructor in course.instructors
-            ]
-            print("     * Intructor(s):", ", ".join(instructor_names))
-            if course.location:
-                print("     * Location:", course.location.full_location)
-            print()
+    courses = result.fetchall()
+    for crn, title in courses:
+        print(f"CRN: {crn}, Title: {title}")
 
 
 async def main():
-    # create a DB session
+    # Create DB session
     db = AsyncSessionLocal()
 
-    # async function invocations go here:
-    await show_courses(db)
-    await show_courses_with_table_joins(db)
-    await print_schedules(db)
+    # Call the functions
+    await print_usernames(db)
+    await print_unique_departments(db)
+    await print_open_cs_courses(db)
 
     await db.close()
 
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+# Task 1: Print all usernames from the system
+async def print_usernames(db: AsyncSession):
+    # Query the User model to get all usernames
+    result = await db.execute(select(User.username))  # username
+    usernames = result.scalars().all()
+    
+    # Print all usernames
+    print("All usernames:")
+    for username in usernames:
+        print(username)
+
+# Task 2: Print unique departments from the courses
+async def print_unique_departments(db: AsyncSession):
+    # Query distinct departments from Course table
+    result = await db.execute(select(Course.department).distinct())
+    departments = result.scalars().all()
+    
+    # Print each unique department
+    print("Unique Departments:")
+    for department in departments:
+        print(department)
+
+# Task 3: Print all open CSCI courses that are not yet full
+async def print_open_cs_courses(db: AsyncSession):
+    # Query courses in the CSCI department that are open (enrollment is not at max)
+    query = select(Course.crn, Course.title).where(
+        Course.department == "CSCI",
+        Course.enrollment_current < Course.enrollment_max
+    )
+    result = await db.execute(query)
+    
+    # Fetch all results
+    open_courses = result.all()
+    
+    # Print the courses
+    print("Open CSCI courses that are not full:")
+    for crn, title in open_courses:
+        print(f"CRN: {crn}, Title: {title}")
+
+async def main():
+    async with get_db() as db:
+        await print_usernames(db)
+        await print_unique_departments(db)
+        await print_open_cs_courses(db)
+
+# Run the main function
+asyncio.run(main())
+
 
 # ###################
 # # SELECT PRACTICE #

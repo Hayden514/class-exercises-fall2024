@@ -4,10 +4,12 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 load_dotenv()
 
+DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
 # Base class for models
 class Base(DeclarativeBase):
@@ -38,6 +40,7 @@ DATABASE_URL_SYNC = URL.create(
 # Create database engines
 engine = create_async_engine(DATABASE_URL, echo=True)
 engine_sync = create_engine(DATABASE_URL_SYNC)
+async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 # Create session factory
 AsyncSessionLocal = sessionmaker(
@@ -52,4 +55,8 @@ SessionLocal = sessionmaker(bind=engine_sync, autocommit=False, autoflush=False)
 # Dependency to get the database session
 async def get_db():
     async with AsyncSessionLocal() as session:
+        yield session
+
+async def get_db() -> AsyncSession:
+    async with async_session() as session:
         yield session

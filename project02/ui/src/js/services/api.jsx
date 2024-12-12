@@ -2,15 +2,22 @@ const rootURL = "http://localhost:8000";
 
 // React Task 1:
 export async function fetchUser(username) {
-    // replace this code with functionality that actually
-    // queries that correct endpoint:
-    return {
-        id: 18,
-        username: "svanwart",
-        email: "svanwart@unca.edu",
-        first_name: "Sarah",
-        last_name: "Van Wart",
-    };
+    const response = await fetch(`${rootURL}/api/users/${username}`);
+    if (!response.ok) {
+        throw new Error("Failed to fetch user");
+    }
+    const user = await response.json();
+    return user;
+}
+
+// React Task 2:
+export async function fetchDepartments() {
+    const response = await fetch(`${rootURL}/api/departments`);
+    if (!response.ok) {
+        throw new Error("Failed to fetch departments");
+    }
+    const departments = await response.json();
+    return departments;
 }
 
 // React Task 3:
@@ -28,8 +35,20 @@ export async function fetchCourses(options = {}) {
     if (options.title) {
         baseURL += `title=${options.title}&`;
     }
+    if (options.classifications) {
+        baseURL += `classifications=${options.classifications.join(",")}&`;
+    }
+    if (options.days) {
+        baseURL += `days=${options.days.join(",")}&`;
+    }
+    if (options.open) {
+        baseURL += `open=${options.open}&`;
+    }
     console.log(baseURL);
     const response = await fetch(baseURL);
+    if (!response.ok) {
+        throw new Error("Failed to fetch courses");
+    }
     const courses = await response.json();
     console.log(courses);
     return courses;
